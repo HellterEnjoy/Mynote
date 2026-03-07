@@ -1,0 +1,433 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MyAvaloniaApp.Views.MainWindow"
+        Width="1200" Height="760"
+        Background="{DynamicResource AppBg}"
+        KeyDown="Window_KeyDown"
+        Title="Mynote">
+  <Window.Styles>
+    <Style Selector="TextBlock.section-title">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+      <Setter Property="LetterSpacing" Value="0.6" />
+    </Style>
+
+    <Style Selector="Button.icon, ToggleButton.icon">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="8" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.icon:pointerover, ToggleButton.icon:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBg}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+    </Style>
+
+    <Style Selector="Button.flat">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Button.flat:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBg}" />
+    </Style>
+
+    <Style Selector="Border.app-shell">
+      <Setter Property="BoxShadow" Value="0 16 44 0 #22000000" />
+    </Style>
+    <Style Selector="Border.app-shell:pointerover">
+      <Setter Property="BoxShadow" Value="0 18 52 0 #2A000000, 0 0 22 0 #14FFFFFF" />
+    </Style>
+
+    <Style Selector="ListBox.sidebar ListBoxItem">
+      <Setter Property="Padding" Value="10,10" />
+      <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <Style Selector="ListBox.sidebar ListBoxItem:selected">
+      <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+    </Style>
+    <Style Selector="ListBox.sidebar ListBoxItem:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBg}" />
+    </Style>
+  </Window.Styles>
+
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveSelectedNoteCommand}" />
+    <KeyBinding Gesture="Ctrl+N" Command="{Binding AddNoteCommand}" />
+    <KeyBinding Gesture="Ctrl+Delete" Command="{Binding DeleteSelectedNoteCommand}" />
+  </Window.KeyBindings>
+
+  <Grid Margin="0">
+    <Border Classes="app-shell"
+            Background="{DynamicResource SurfaceBg}"
+            CornerRadius="0"
+            BorderBrush="Transparent"
+            BorderThickness="0">
+      <Grid RowDefinitions="Auto,*" ColumnDefinitions="320,*">
+        <!-- Top bar -->
+        <Border Grid.ColumnSpan="2"
+                Background="{DynamicResource HeaderBg}"
+                BorderBrush="{DynamicResource BorderSoft}"
+                BorderThickness="0,0,0,1"
+                Padding="18,14">
+          <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+            <TextBlock Text="Mynote"
+                       FontSize="30"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource TextPrimary}"
+                       VerticalAlignment="Center" />
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+              <!-- Optional Kanban toggle -->
+              <ToggleButton Classes="icon"
+                            IsChecked="{Binding IsKanbanSelected, Mode=TwoWay}"
+                            ToolTip.Tip="Kanban">
+                <Path Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                      Data="M4,4 L10,4 L10,20 L4,20 Z M12,4 L20,4 L20,14 L12,14 Z M12,16 L20,16 L20,20 L12,20 Z" />
+              </ToggleButton>
+
+              <ToggleButton Classes="icon"
+                            IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"
+                            ToolTip.Tip="Dark mode">
+                <Path Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                      Data="M12,2 C8.2,2 5.1,5.1 5.1,8.9 C5.1,12.7 8.2,15.8 12,15.8 C13.3,15.8 14.5,15.4 15.5,14.8 C12.7,14.7 10.5,12.4 10.5,9.6 C10.5,6.8 12.7,4.5 15.5,4.4 C14.5,2.9 13.3,2 12,2 Z" />
+              </ToggleButton>
+
+              <Button Classes="icon"
+                      Click="SwitchProject_Click"
+                      ToolTip.Tip="Switch project">
+                <Path Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                      Data="M4,4 L10,4 L12,6 L20,6 L20,18 L4,18 Z M4,6 L11.5,6 L10,4.5 L4,4.5 Z" />
+              </Button>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- Sidebar -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource PanelBg}"
+                Padding="16">
+          <Border.ContextMenu>
+            <ContextMenu>
+              <MenuItem Header="New note" Click="NewNote_Click" />
+              <MenuItem Header="New folder…" Click="NewFolder_Click" />
+            </ContextMenu>
+          </Border.ContextMenu>
+          <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="14">
+            <TextBox Text="{Binding SearchQuery, Mode=TwoWay}"
+                     x:Name="SearchBox"
+                     Watermark="Search..."
+                     Padding="12,10"
+                     CornerRadius="12"
+                     BorderBrush="{DynamicResource BorderSoft}"
+                     BorderThickness="1"
+                     Background="{DynamicResource SurfaceBg}"
+                     Foreground="{DynamicResource TextPrimary}" />
+
+            <StackPanel Grid.Row="1" Spacing="8">
+              <TextBlock Text="FOLDERS" Classes="section-title" />
+              <ListBox Classes="sidebar"
+                       ItemsSource="{Binding FolderFilters}"
+                       SelectedItem="{Binding SelectedFolderFilter}"
+                       Background="Transparent"
+                       BorderThickness="0">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Border Background="Transparent">
+                      <Border.ContextMenu>
+                        <ContextMenu>
+                          <MenuItem Header="Delete"
+                                    Command="{Binding DataContext.DeleteFolderFilterCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        </ContextMenu>
+                      </Border.ContextMenu>
+                      <Border DragDrop.AllowDrop="True"
+                              DragDrop.DragOver="Folder_DragOver"
+                              DragDrop.Drop="Folder_Drop">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Path Width="18" Height="18" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                              Data="M4,4 L10,4 L12,6 L20,6 L20,18 L4,18 Z" />
+                        <TextBlock Text="{Binding Name}" FontSize="16" Foreground="{DynamicResource TextPrimary}" />
+                      </StackPanel>
+                      </Border>
+                    </Border>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Spacing="8">
+              <TextBlock Text="TAGS" Classes="section-title" />
+              <ListBox Classes="sidebar"
+                       ItemsSource="{Binding TagFilters}"
+                       SelectedItem="{Binding SelectedTagFilter}"
+                       MaxHeight="180"
+                       Background="Transparent"
+                       BorderThickness="0">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding Label}" FontSize="16" Foreground="{DynamicResource TextPrimary}" />
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
+
+            <StackPanel Grid.Row="3" Spacing="8">
+              <TextBlock Text="NOTES" Classes="section-title" />
+              <ListBox Classes="sidebar"
+                       ItemsSource="{Binding FilteredNotes}"
+                       SelectedItem="{Binding SelectedNote}"
+                       Background="Transparent"
+                       BorderThickness="0">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Border Background="Transparent">
+                      <Border.ContextMenu>
+                        <ContextMenu>
+                          <MenuItem Header="Delete"
+                                    Command="{Binding DataContext.DeleteNoteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        </ContextMenu>
+                      </Border.ContextMenu>
+                      <Border PointerPressed="DragSource_PointerPressed"
+                              PointerMoved="DragSource_PointerMoved">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Path Width="18" Height="18" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                              Data="M6,4 L16,4 L18,6 L18,20 L6,20 Z M8,8 L16,8 M8,12 L16,12 M8,16 L14,16" />
+                        <TextBlock Text="{Binding Title}" FontSize="16" Foreground="{DynamicResource TextPrimary}" />
+                      </StackPanel>
+                      </Border>
+                    </Border>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
+
+            <Button Grid.Row="4"
+                    Command="{Binding AddNoteCommand}"
+                    CornerRadius="14"
+                    Background="{DynamicResource SurfaceBg}"
+                    BorderBrush="{DynamicResource BorderSoft}"
+                    BorderThickness="1"
+                    Padding="14,12">
+              <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <Border Width="28" Height="28" CornerRadius="14" Background="{DynamicResource HoverBg}">
+                  <Path Width="16" Height="16" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Data="M11,5 L11,11 L17,11 L17,13 L11,13 L11,19 L9,19 L9,13 L3,13 L3,11 L9,11 L9,5 Z" />
+                </Border>
+                <TextBlock Text="New note" FontSize="16" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </Grid>
+        </Border>
+
+        <!-- Main -->
+        <Grid Grid.Row="1" Grid.Column="1">
+          <!-- Editor -->
+          <ScrollViewer IsVisible="{Binding IsEditorSelected}" Margin="24">
+            <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="14">
+              <StackPanel IsVisible="{Binding HasSelectedNote}" Spacing="14">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                  <TextBox Text="{Binding SelectedNote.Title, Mode=TwoWay}"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           Background="Transparent"
+                           BorderThickness="0"
+                           Padding="0"
+                           Foreground="{DynamicResource TextPrimary}"
+                           LostFocus="Editor_LostFocus"
+                           Watermark="Untitled" />
+
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Button Classes="icon" Command="{Binding SaveSelectedNoteCommand}" ToolTip.Tip="Save (Ctrl+S)">
+                      <Path Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                            Data="M4,3 L14,3 L17,6 L17,17 L3,17 L3,3 Z M6,3 L6,8 L14,8 L14,3 Z M6,11 L14,11 L14,15 L6,15 Z" />
+                    </Button>
+                    <Button Classes="icon" Command="{Binding DeleteSelectedNoteCommand}" ToolTip.Tip="Delete (Ctrl+Delete)">
+                      <Path Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                            Data="M6,3 L14,3 L14,5 L18,5 L18,7 L2,7 L2,5 L6,5 Z M5,8 L15,8 L14,18 L6,18 Z" />
+                    </Button>
+                  </StackPanel>
+                </Grid>
+
+                <TextBlock Text="{Binding SelectedNoteLastEdited}"
+                           Foreground="{DynamicResource TextSecondary}"
+                           FontSize="14" />
+
+                <TextBox Text="{Binding SelectedNote.Content, Mode=TwoWay}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         x:Name="ContentBox"
+                         CornerRadius="14"
+                         BorderBrush="{DynamicResource BorderSoft}"
+                         BorderThickness="1"
+                         Background="{DynamicResource SubPanelBg}"
+                         Padding="14"
+                         FontSize="16"
+                         Foreground="{DynamicResource TextPrimary}"
+                         LostFocus="Editor_LostFocus"
+                         Watermark="Write your note... Use [[Title]] to link notes."
+                         MinHeight="360" />
+
+                <StackPanel Spacing="10" Margin="0,10,0,0">
+                  <TextBlock Text="Linked notes" FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+                  <ItemsControl ItemsSource="{Binding LinkedNotes}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,4">
+                          <TextBlock Text="•" FontSize="18" Foreground="{DynamicResource TextSecondary}" />
+                          <Button Classes="flat"
+                                  Command="{Binding DataContext.OpenNoteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  CommandParameter="{Binding}">
+                            <TextBlock Text="{Binding Title}" FontSize="18" Foreground="{DynamicResource TextPrimary}" />
+                          </Button>
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+
+                  <TextBlock Text="Backlinks" FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,10,0,0" />
+                  <ItemsControl ItemsSource="{Binding Backlinks}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,4">
+                          <TextBlock Text="•" FontSize="18" Foreground="{DynamicResource TextSecondary}" />
+                          <Button Classes="flat"
+                                  Command="{Binding DataContext.OpenNoteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  CommandParameter="{Binding}">
+                            <TextBlock Text="{Binding Title}" FontSize="18" Foreground="{DynamicResource TextPrimary}" />
+                          </Button>
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </StackPanel>
+
+              <Border IsVisible="{Binding HasNoSelectedNote}"
+                      Background="{DynamicResource SubPanelBg}"
+                      CornerRadius="14"
+                      Padding="18"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Width="520">
+                <StackPanel Spacing="12">
+                  <TextBlock Text="No note selected"
+                             FontSize="20"
+                             FontWeight="SemiBold"
+                             Foreground="{DynamicResource TextPrimary}" />
+                  <TextBlock Text="Pick a note from the left, or create a new one."
+                             FontSize="14"
+                             Foreground="{DynamicResource TextSecondary}" />
+                </StackPanel>
+              </Border>
+            </Grid>
+          </ScrollViewer>
+
+          <!-- Kanban -->
+          <Grid IsVisible="{Binding IsKanbanSelected}" Margin="24" RowDefinitions="Auto,*">
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+              <TextBlock Text="{Binding SelectedProject.Name}"
+                         FontSize="18"
+                         FontWeight="SemiBold"
+                         Foreground="{DynamicResource TextPrimary}"
+                         VerticalAlignment="Center" />
+              <Button Grid.Column="1"
+                      Command="{Binding AddColumnCommand}"
+                      CornerRadius="12">
+                <TextBlock Text="New Column" FontSize="14" />
+              </Button>
+            </Grid>
+
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+              <ItemsControl ItemsSource="{Binding Columns}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="14" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Width="300"
+                            Background="{DynamicResource PanelBg}"
+                            CornerRadius="12"
+                            BorderBrush="{DynamicResource BorderSoft}"
+                            BorderThickness="1"
+                            DragDrop.AllowDrop="True"
+                            DragDrop.DragOver="KanbanColumn_DragOver"
+                            DragDrop.Drop="KanbanColumn_Drop"
+                            Padding="12">
+                      <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                          <TextBox Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   Background="Transparent"
+                                   BorderThickness="0"
+                                   Padding="0"
+                                   VerticalAlignment="Center" />
+                          <Button Grid.Column="1" Classes="icon" Command="{Binding AddCardCommand}" ToolTip.Tip="Add card">
+                            <Path Width="18" Height="18" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                                  Data="M11,5 L11,11 L17,11 L17,13 L11,13 L11,19 L9,19 L9,13 L3,13 L3,11 L9,11 L9,5 Z" />
+                          </Button>
+                          <Button Grid.Column="2" Classes="icon" Command="{Binding DeleteColumnCommand}" ToolTip.Tip="Delete column">
+                            <Path Width="18" Height="18" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                                  Data="M6,3 L14,3 L14,5 L18,5 L18,7 L2,7 L2,5 L6,5 Z M5,8 L15,8 L14,18 L6,18 Z" />
+                          </Button>
+                        </Grid>
+
+                        <ItemsControl ItemsSource="{Binding Cards}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                              <Grid Margin="0,4" ColumnDefinitions="*,Auto" ColumnSpacing="6"
+                                    PointerPressed="DragSource_PointerPressed"
+                                    PointerMoved="DragSource_PointerMoved">
+                                <Grid.ContextMenu>
+                                  <ContextMenu>
+                                    <MenuItem Header="Delete"
+                                              Command="{Binding DataContext.DeleteKanbanCardCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                  </ContextMenu>
+                                </Grid.ContextMenu>
+                                <Button Classes="flat"
+                                        Command="{Binding DataContext.OpenKanbanCardCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}"
+                                        CornerRadius="10">
+                                  <Border Background="{DynamicResource SurfaceBg}" CornerRadius="10" BorderBrush="{DynamicResource BorderSoft}" BorderThickness="1" Padding="10">
+                                    <TextBlock Text="{Binding Title}" FontSize="14" Foreground="{DynamicResource TextPrimary}" />
+                                  </Border>
+                                </Button>
+                                <Button Grid.Column="1"
+                                        Classes="icon"
+                                        Command="{Binding DataContext.DeleteKanbanCardCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip.Tip="Delete card">
+                                  <Path Width="18" Height="18" Stretch="Uniform" Fill="{DynamicResource Icon}"
+                                        Data="M6,3 L14,3 L14,5 L18,5 L18,7 L2,7 L2,5 L6,5 Z M5,8 L15,8 L14,18 L6,18 Z" />
+                                </Button>
+                              </Grid>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

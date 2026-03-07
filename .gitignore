@@ -1,0 +1,49 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+out/
+publish/
+
+# Rider / VS / VSCode
+.vs/
+.vscode/
+.idea/
+
+# User files
+*.user
+*.rsuser
+*.suo
+*.userprefs
+*.sln.docstates
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Local tools
+.dotnet/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp
+*.tmp
+*.temp
+*.cache
+
+# JetBrains Rider
+.idea/
+
+# Visual Studio Code
+.history/
+
+# Avalonia previewer cache
+*.axaml.g.cs

@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MyAvaloniaApp.Views.CommandPaletteWindow"
+        Width="780" Height="520"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppBg}"
+        TransparencyLevelHint="None"
+        Title="Command Palette">
+  <Grid Margin="18" RowDefinitions="Auto,*">
+    <Border Background="{DynamicResource SurfaceBg}"
+            CornerRadius="14"
+            BorderBrush="{DynamicResource Border}"
+            BorderThickness="1"
+            Padding="14">
+      <TextBox x:Name="QueryBox"
+               Text="{Binding Query, Mode=TwoWay}"
+               Watermark="Type a command, note title, or #tag…"
+               Padding="12,10"
+               CornerRadius="12"
+               BorderBrush="{DynamicResource BorderSoft}"
+               BorderThickness="1"
+               Background="{DynamicResource SurfaceBg}"
+               Foreground="{DynamicResource TextPrimary}" />
+    </Border>
+
+    <Border Grid.Row="1"
+            Background="{DynamicResource SurfaceBg}"
+            CornerRadius="14"
+            BorderBrush="{DynamicResource Border}"
+            BorderThickness="1"
+            Padding="10"
+            Margin="0,12,0,0">
+      <ListBox x:Name="ResultsList"
+               ItemsSource="{Binding Items}"
+               SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+               DoubleTapped="ResultsList_DoubleTapped"
+               Background="Transparent"
+               BorderThickness="0">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <Border Padding="10" CornerRadius="10">
+              <StackPanel Spacing="2">
+                <TextBlock Text="{Binding Title}" FontSize="16" Foreground="{DynamicResource TextPrimary}" />
+                <TextBlock Text="{Binding Subtitle}" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+  </Grid>
+</Window>
