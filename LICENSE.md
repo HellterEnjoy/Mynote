@@ -1,6 +1,6 @@
 Mynote Source License (MSL)
 
-Copyright (c) 2026 Kirill Yazynin
+Copyright (c) 2026 Kirill Yazynin / Kyrylo Yazynin
 
 Permission is granted to view, study, and modify the source code of this project for personal, educational, and non-commercial purposes.
 
